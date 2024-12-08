@@ -18,6 +18,7 @@
 
 #include "ModrinthPackExportTask.h"
 
+#include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -28,6 +29,7 @@
 #include "minecraft/mod/MetadataHandler.h"
 #include "minecraft/mod/ModFolderModel.h"
 #include "modplatform/helpers/HashUtils.h"
+#include "tasks/Task.h"
 
 const QStringList ModrinthPackExportTask::PREFIXES({ "mods/", "coremods/", "resourcepacks/", "texturepacks/", "shaderpacks/" });
 const QStringList ModrinthPackExportTask::FILE_EXTENSIONS({ "jar", "litemod", "zip" });
@@ -121,7 +123,7 @@ void ModrinthPackExportTask::collectHashes()
             modIter != allMods.end()) {
             const Mod* mod = *modIter;
             if (mod->metadata() != nullptr) {
-                QUrl& url = mod->metadata()->url;
+                const QUrl& url = mod->metadata()->url;
                 // ensure the url is permitted on modrinth.com
                 if (!url.isEmpty() && BuildConfig.MODRINTH_MRPACK_HOSTS.contains(url.host())) {
                     qDebug() << "Resolving" << relative << "from index";
@@ -154,8 +156,8 @@ void ModrinthPackExportTask::makeApiRequest()
         setStatus(tr("Finding versions for hashes..."));
         auto response = std::make_shared<QByteArray>();
         task = api.currentVersions(pendingHashes.values(), "sha512", response);
-        connect(task.get(), &NetJob::succeeded, [this, response]() { parseApiResponse(response); });
-        connect(task.get(), &NetJob::failed, this, &ModrinthPackExportTask::emitFailed);
+        connect(task.get(), &Task::succeeded, [this, response]() { parseApiResponse(response); });
+        connect(task.get(), &Task::failed, this, &ModrinthPackExportTask::emitFailed);
         task->start();
     }
 }
