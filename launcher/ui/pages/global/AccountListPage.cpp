@@ -148,6 +148,7 @@ void AccountListPage::on_actionAddMicrosoft_triggered()
 //                                "If you have lost your account you can contact Microsoft for support."));
 //        return;
 //    }
+// Removed microsoft account requirement for offline account
 
     MinecraftAccountPtr account =
         OfflineLoginDialog::newAccount(this, tr("Please enter your desired username to add your offline account."));
